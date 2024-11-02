@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -7,8 +7,29 @@ import { TodoList } from './components/TodoList';
 import { TodoFilter } from './components/TodoFilter';
 import { TodoModal } from './components/TodoModal';
 import { Loader } from './components/Loader';
+import { getTodos } from './api';
+import { Todo } from './types/Todo';
+
+const initialTodo: Todo = {
+  userId: 0,
+  id: 0,
+  title: '0',
+  completed: false,
+};
 
 export const App: React.FC = () => {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [todo, setTodo] = useState<Todo>(initialTodo);
+
+  function getAllTodos() {
+    getTodos().then(setTodos);
+  }
+
+  useEffect(() => {
+    getAllTodos();
+  }, []);
+
   return (
     <>
       <div className="section">
@@ -22,13 +43,23 @@ export const App: React.FC = () => {
 
             <div className="block">
               <Loader />
-              <TodoList />
+              <TodoList
+                todos={todos}
+                setShowModal={setShowModal}
+                setTodo={setTodo}
+              />
             </div>
           </div>
         </div>
       </div>
 
-      <TodoModal />
+      {showModal && (
+        <TodoModal
+          showModal={showModal}
+          setShowModal={setShowModal}
+          todo={todo}
+        />
+      )}
     </>
   );
 };
