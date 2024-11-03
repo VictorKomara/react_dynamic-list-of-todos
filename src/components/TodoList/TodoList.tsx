@@ -6,9 +6,17 @@ type Props = {
   todos: Todo[];
   setShowModal: (show: boolean) => void;
   setTodo: (todo: Todo) => void;
+  iconEyeId: number;
+  setIconEyeId: (iconEyeId: number) => void;
 };
 
-export const TodoList: React.FC<Props> = ({ todos, setShowModal, setTodo }) => (
+export const TodoList: React.FC<Props> = ({
+  todos,
+  setShowModal,
+  setTodo,
+  iconEyeId,
+  setIconEyeId,
+}) => (
   <table className="table is-narrow is-fullwidth">
     <thead>
       <tr>
@@ -52,10 +60,16 @@ export const TodoList: React.FC<Props> = ({ todos, setShowModal, setTodo }) => (
               onClick={() => {
                 setShowModal(true);
                 setTodo(todo);
+                setIconEyeId(todo.id);
               }}
             >
               <span className="icon">
-                <i className="far fa-eye" />
+                <i
+                  className={cn('far', {
+                    'fa-eye': todo.id !== iconEyeId,
+                    'fa-eye-slash': todo.id === iconEyeId,
+                  })}
+                />
               </span>
             </button>
           </td>

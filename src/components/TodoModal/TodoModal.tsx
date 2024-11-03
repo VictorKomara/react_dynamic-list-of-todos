@@ -9,22 +9,28 @@ type Props = {
   showModal: boolean;
   setShowModal: (close: boolean) => void;
   todo: Todo;
+  setIconEyeId: (iconEyeId: number) => void;
 };
 
 export const TodoModal: React.FC<Props> = ({
   showModal,
   setShowModal,
   todo,
+  setIconEyeId,
 }) => {
   const [user, setUser] = useState<User>();
+  const [loading, setLoading] = useState(false);
 
   function getCurrentUser() {
-    getUser(todo.userId).then(setUser);
+    getUser(todo.userId)
+      .then(setUser)
+      .finally(() => setLoading(false));
   }
 
   useEffect(() => {
+    setLoading(true);
     getCurrentUser();
-  }, []);
+  }, [todo.userId]);
 
   return (
     <div
@@ -35,7 +41,7 @@ export const TodoModal: React.FC<Props> = ({
     >
       <div className="modal-background" />
 
-      {false ? (
+      {loading ? (
         <Loader />
       ) : (
         <div className="modal-card">
@@ -54,6 +60,7 @@ export const TodoModal: React.FC<Props> = ({
               data-cy="modal-close"
               onClick={() => {
                 setShowModal(false);
+                setIconEyeId(0);
               }}
             />
           </header>

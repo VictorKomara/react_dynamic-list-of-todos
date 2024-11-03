@@ -17,16 +17,26 @@ const initialTodo: Todo = {
   completed: false,
 };
 
+let allTodos: Todo[] = [];
+
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [todo, setTodo] = useState<Todo>(initialTodo);
+  const [loading, setLoading] = useState(true);
+  const [iconEyeId, setIconEyeId] = useState(0);
 
   function getAllTodos() {
-    getTodos().then(setTodos);
+    getTodos()
+      .then(resultTodos => {
+        allTodos = resultTodos;
+        setTodos(resultTodos);
+      })
+      .finally(() => setLoading(false));
   }
 
   useEffect(() => {
+    setLoading(true);
     getAllTodos();
   }, []);
 
@@ -38,16 +48,21 @@ export const App: React.FC = () => {
             <h1 className="title">Todos:</h1>
 
             <div className="block">
-              <TodoFilter />
+              <TodoFilter allTodos={allTodos} setTodos={setTodos} />
             </div>
 
             <div className="block">
-              <Loader />
-              <TodoList
-                todos={todos}
-                setShowModal={setShowModal}
-                setTodo={setTodo}
-              />
+              {loading && <Loader />}
+
+              {!loading && (
+                <TodoList
+                  todos={todos}
+                  setShowModal={setShowModal}
+                  setTodo={setTodo}
+                  iconEyeId={iconEyeId}
+                  setIconEyeId={setIconEyeId}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -58,6 +73,7 @@ export const App: React.FC = () => {
           showModal={showModal}
           setShowModal={setShowModal}
           todo={todo}
+          setIconEyeId={setIconEyeId}
         />
       )}
     </>
