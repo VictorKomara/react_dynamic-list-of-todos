@@ -1,41 +1,43 @@
-import { Todo } from '../../types/Todo';
+import { useCallback, useState } from 'react';
+import { debounce } from 'lodash';
 
 type Props = {
-  allTodos: Todo[];
-  setTodos: (todos: Todo[]) => void;
+  filter: string;
+  setFilter: (value: string) => void;
+  query: string;
+  setQuery: (value: string) => void;
 };
 
-function getActiveTodos(todos: Todo[]): Todo[] {
-  return todos.filter(todo => todo.completed === false);
-}
+export const TodoFilter: React.FC<Props> = ({
+  filter,
+  setFilter,
+  query,
+  setQuery,
+}) => {
+  const [inputValue, setInputValue] = useState(query);
 
-function getCompletedTodos(todos: Todo[]): Todo[] {
-  return todos.filter(todo => todo.completed === true);
-}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSetQuery = useCallback(
+    debounce((value: string) => {
+      setQuery(value);
+    }, 500),
+    [],
+  );
 
-export const TodoFilter: React.FC<Props> = ({ allTodos, setTodos }) => {
-  const activeTodos = getActiveTodos(allTodos);
-  const completedTodos = getCompletedTodos(allTodos);
-
-  const handleTodoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    switch (event.target.value) {
-      case 'all':
-        setTodos(allTodos);
-        break;
-      case 'active':
-        setTodos(activeTodos);
-        break;
-      case 'completed':
-        setTodos(completedTodos);
-        break;
-    }
+  const clearInput = () => {
+    setInputValue('');
+    setQuery('');
   };
 
   return (
     <form className="field has-addons">
       <p className="control">
         <span className="select">
-          <select data-cy="statusSelect" onChange={handleTodoChange}>
+          <select
+            data-cy="statusSelect"
+            value={filter}
+            onChange={event => setFilter(event.target.value)}
+          >
             <option value="all">All</option>
             <option value="active">Active</option>
             <option value="completed">Completed</option>
@@ -49,19 +51,27 @@ export const TodoFilter: React.FC<Props> = ({ allTodos, setTodos }) => {
           type="text"
           className="input"
           placeholder="Search..."
+          value={inputValue}
+          onChange={event => {
+            setInputValue(event.target.value);
+            debouncedSetQuery(event.target.value);
+          }}
         />
         <span className="icon is-left">
           <i className="fas fa-magnifying-glass" />
         </span>
 
-        <span className="icon is-right" style={{ pointerEvents: 'all' }}>
-          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-          <button
-            data-cy="clearSearchButton"
-            type="button"
-            className="delete"
-          />
-        </span>
+        {inputValue && (
+          <span className="icon is-right" style={{ pointerEvents: 'all' }}>
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+            <button
+              data-cy="clearSearchButton"
+              type="button"
+              className="delete"
+              onClick={clearInput}
+            />
+          </span>
+        )}
       </p>
     </form>
   );

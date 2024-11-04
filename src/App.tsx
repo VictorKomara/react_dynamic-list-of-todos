@@ -17,7 +17,28 @@ const initialTodo: Todo = {
   completed: false,
 };
 
-let allTodos: Todo[] = [];
+const filteredTodos = (todos: Todo[], filter: string, query: string) => {
+  let filtered = todos;
+
+  if (query) {
+    const lowerCaseQuery = query.toLowerCase();
+
+    filtered = filtered.filter(todo =>
+      todo.title.toLowerCase().includes(lowerCaseQuery),
+    );
+  }
+
+  switch (filter) {
+    case 'all':
+      return filtered;
+    case 'active':
+      return filtered.filter(todo => !todo.completed);
+    case 'completed':
+      return filtered.filter(todo => todo.completed);
+    default:
+      return filtered;
+  }
+};
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -25,11 +46,14 @@ export const App: React.FC = () => {
   const [todo, setTodo] = useState<Todo>(initialTodo);
   const [loading, setLoading] = useState(true);
   const [iconEyeId, setIconEyeId] = useState(0);
+  const [filter, setFilter] = useState('all');
+  const [query, setQuery] = useState('');
+
+  const visibleTodos = filteredTodos(todos, filter, query);
 
   function getAllTodos() {
     getTodos()
       .then(resultTodos => {
-        allTodos = resultTodos;
         setTodos(resultTodos);
       })
       .finally(() => setLoading(false));
@@ -48,7 +72,12 @@ export const App: React.FC = () => {
             <h1 className="title">Todos:</h1>
 
             <div className="block">
-              <TodoFilter allTodos={allTodos} setTodos={setTodos} />
+              <TodoFilter
+                filter={filter}
+                setFilter={setFilter}
+                query={query}
+                setQuery={setQuery}
+              />
             </div>
 
             <div className="block">
@@ -56,7 +85,7 @@ export const App: React.FC = () => {
 
               {!loading && (
                 <TodoList
-                  todos={todos}
+                  todos={visibleTodos}
                   setShowModal={setShowModal}
                   setTodo={setTodo}
                   iconEyeId={iconEyeId}
